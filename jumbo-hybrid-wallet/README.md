@@ -1,6 +1,4 @@
 # Jumbo Hybrid Wallet
-
-[![npm version](https://badge.fury.io/js/jumbo-hybrid-wallet.svg)](https://badge.fury.io/js/jumbo-hybrid-wallet)
 [![Build Status](https://github.com/elonbukelembe-cpu/jumbo-hybrid-wallet/actions/workflows/ci.yml/badge.svg)](https://github.com/elonbukelembe-cpu/jumbo-hybrid-wallet/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
