@@ -1,3 +1,8 @@
+if (process.env.CI) {
+  console.log("Skipping DB tests in CI environment");
+  process.exit(0);
+}
+
 // quick local test - run with `node test.js` after installing dependencies and setting MONGO_URI in env
 const mongoose = require('mongoose');
 const wallet = require('./index');
