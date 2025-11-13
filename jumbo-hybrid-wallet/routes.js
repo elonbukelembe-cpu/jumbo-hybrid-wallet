@@ -1,49 +1,63 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const walletService = require('./walletService');
+const {
+  depositCredits,
+  spendCredits,
+  payout,
+  checkBalance,
+  getWalletSummary,
+  setBalanceUpdateNotifier
+} = require("./walletService");
 
-// POST /api/wallet/deposit
-router.post('/wallet/deposit', async (req, res) => {
-  try {
-    const { ownerId, walletType, amount, description, category, metadata } = req.body;
-    const wallet = await walletService.depositCredits(ownerId, walletType, Number(amount), description, category, metadata);
-    res.json(wallet);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+// Optional: WebSocket or other notifier example
+setBalanceUpdateNotifier(async (wallet) => {
+  console.log(`Wallet updated: ${wallet.ownerId} - ${wallet.type} balance: ${wallet.balance}`);
 });
 
-// POST /api/wallet/spend
-router.post('/wallet/spend', async (req, res) => {
-  try {
-    const { ownerId, walletType, amount, description, category, metadata } = req.body;
-    const wallet = await walletService.spendCredits(ownerId, walletType, Number(amount), description, category, metadata);
-    res.json(wallet);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// Helper: async wrapper to catch errors
+const asyncHandler = fn => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
 
-// POST /api/wallet/payout
-router.post('/wallet/payout', async (req, res) => {
-  try {
-    const { ownerId, walletType, amount, description, category, metadata } = req.body;
-    const wallet = await walletService.payout(ownerId, walletType, Number(amount), description, category, metadata);
-    res.json(wallet);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// Deposit endpoint
+router.post("/wallet/deposit", asyncHandler(async (req, res) => {
+  const { ownerId, walletType, amount, description, category, metadata } = req.body;
+  const wallet = await depositCredits(ownerId, walletType, amount, description, category, metadata);
+  res.json({ success: true, wallet });
+}));
 
-// GET /api/wallet/:ownerId/:walletType
-router.get('/wallet/:ownerId/:walletType', async (req, res) => {
-  try {
-    const { ownerId, walletType } = req.params;
-    const balance = await walletService.checkBalance(ownerId, walletType);
-    res.json({ ownerId, walletType, balance });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+// Spend endpoint
+router.post("/wallet/spend", asyncHandler(async (req, res) => {
+  const { ownerId, walletType, amount, description, category, metadata } = req.body;
+  const wallet = await spendCredits(ownerId, walletType, amount, description, category, metadata);
+  res.json({ success: true, wallet });
+}));
+
+// Payout endpoint
+router.post("/wallet/payout", asyncHandler(async (req, res) => {
+  const { ownerId, walletType, amount, description, category, metadata } = req.body;
+  const wallet = await payout(ownerId, walletType, amount, description, category, metadata);
+  res.json({ success: true, wallet });
+}));
+
+// Check balance endpoint
+router.get("/wallet/:ownerId/:walletType/balance", asyncHandler(async (req, res) => {
+  const { ownerId, walletType } = req.params;
+  const balance = await checkBalance(ownerId, walletType);
+  res.json({ success: true, ownerId, walletType, balance });
+}));
+
+// Get full wallet summary
+router.get("/wallet/:ownerId/summary", asyncHandler(async (req, res) => {
+  const { ownerId } = req.params;
+  const summary = await getWalletSummary(ownerId);
+  res.json({ success: true, ownerId, summary });
+}));
+
+// Global error handler
+router.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(400).json({ success: false, error: err.message });
 });
 
 module.exports = router;
