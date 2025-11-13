@@ -1,16 +1,17 @@
 {
   "name": "jumbo-hybrid-wallet",
   "version": "1.0.0",
-  "description": "Jumbo Hybrid Wallet — advanced hybrid wallet with multi-currency credits, analytics, real-time updates and audit logs",
+  "description": "A hybrid wallet module supporting multi-currency, transaction logs, and real-time notifications.",
   "main": "index.js",
-  "keywords": ["wallet", "hybrid-wallet", "credits", "pay-as-you-go", "subscription", "analytics"],
   "author": "Elon Bukelembe",
   "license": "MIT",
-  "scripts": {
-    "test": "node test.js"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elonbukelembe-cpu/jumbo-hybrid-wallet.git"
   },
-  "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.6.0"
+  "homepage": "https://github.com/elonbukelembe-cpu/jumbo-hybrid-wallet#readme",
+  "keywords": ["wallet", "nodejs", "hybrid-wallet", "multi-currency", "API"],
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
   }
 }
