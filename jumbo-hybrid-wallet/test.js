@@ -1,62 +1,29 @@
-/**
- * test.js
- * Refactored to use walletService functions
- * Run with: node test.js
- */
+// quick local test - run with `node test.js` after installing dependencies and setting MONGO_URI in env
+const mongoose = require('mongoose');
+const wallet = require('./index');
 
-const mongoose = require("mongoose");
-const {
-  depositCredits,
-  spendCredits,
-  payout,
-  checkBalance,
-  getWalletSummary,
-  setBalanceUpdateNotifier
-} = require("./walletService");
+const MONGO = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/jumbo-test';
 
-// Optional: balance update notification
-setBalanceUpdateNotifier(async (wallet) => {
-  console.log(`[NOTIFY] Wallet Updated -> Owner: ${wallet.ownerId}, Type: ${wallet.type}, Balance: ${wallet.balance}`);
-});
+async function run() {
+  await mongoose.connect(MONGO);
+  console.log('Connected to MongoDB', MONGO);
 
-async function runTest() {
-  const MONGO_URI = "mongodb://localhost:27017/jumbo_wallet_test";
+  const ownerId = new mongoose.Types.ObjectId();
+  console.log('ownerId:', ownerId.toString());
 
-  try {
-    // Connect to MongoDB
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log("MongoDB connected for testing.");
+  const w1 = await wallet.depositCredits(ownerId, 'payg', 1000, 'Initial top-up');
+  console.log('after deposit balance:', w1.balance);
 
-    const ownerId = "user123";
-    const walletType = "main";
+  await wallet.spendCredits(ownerId, 'payg', 200, 'Buy item');
+  const bal = await wallet.checkBalance(ownerId, 'payg');
+  console.log('final balance:', bal);
 
-    console.log("\n--- TEST: Deposit 1000 KES ---");
-    const depositWallet = await depositCredits(ownerId, walletType, 1000, "Initial deposit", "testing");
-    console.log("Deposit complete:", depositWallet);
-
-    console.log("\n--- TEST: Spend 300 KES ---");
-    const spendWallet = await spendCredits(ownerId, walletType, 300, "Test purchase", "testing");
-    console.log("Spend complete:", spendWallet);
-
-    console.log("\n--- TEST: Payout 200 KES ---");
-    const payoutWallet = await payout(ownerId, walletType, 200, "Test payout", "testing");
-    console.log("Payout complete:", payoutWallet);
-
-    console.log("\n--- TEST: Check Balance ---");
-    const balance = await checkBalance(ownerId, walletType);
-    console.log(`Current balance for ${ownerId} (${walletType}): ${balance}`);
-
-    console.log("\n--- TEST: Wallet Summary ---");
-    const summary = await getWalletSummary(ownerId);
-    console.log("Wallet Summary:", summary);
-
-  } catch (err) {
-    console.error("Test error:", err.message);
-  } finally {
-    await mongoose.connection.close();
-    console.log("MongoDB connection closed.");
-  }
+  const summary = await wallet.getWalletSummary(ownerId);
+  console.log('summary:', JSON.stringify(summary, null, 2));
+  await mongoose.disconnect();
 }
 
-// Run the test
-runTest();
+run().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
